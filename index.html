@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+    }
+
+    .bg {
+      height: 100%;
+      background: url("./img/bg1.jpg") no-repeat;
+      background-size: cover;
+      background-position: center center;
+      position: relative;
+      overflow: hidden;
+      margin: 0 auto;
+    }
+
+
+    .start_area {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: rgba(255, 255, 255, .5);
+      z-index: 999;
+      cursor: pointer;
+    }
+
+    .start_area img {
+      width: 300px;
+    }
+
+    .top_horse {
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .close {
+      width: 50px;
+      height: 50px;
+      position: absolute;
+      right: 10px;
+      top: 15px;
+      background: url("./img/close.png") no-repeat;
+      background-size: contain;
+    }
+
+    .horse_area {
+      position: relative;
+      /* 设置为相对定位 */
+      cursor: move;
+      /* 鼠标悬停时显示移动光标 */
+      z-index: 10;
+      /* 确保拖拽元素在最上层 */
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .horse_area.moving {
+      position: fixed;
+      /* 拖拽时使用固定定位 */
+      z-index: 999;
+      /* 拖拽时在最上层 */
+      pointer-events: none;
+      /* 防止拖拽元素影响鼠标事件 */
+    }
+
+    .horse_area img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .bottom_plate {
+      width: 100%;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 0px;
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+    }
+
+    .plate_area {
+      width: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-user-drag: none;
+      -khtml-user-drag: none;
+      -moz-user-drag: none;
+      -o-user-drag: none;
+      user-drag: none;
+      pointer-events: auto;
+      /* 确保盘子可以接收点击事件 */
+    }
+
+    .plate_area img {
+      object-fit: contain;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-user-drag: none;
+      -khtml-user-drag: none;
+      -moz-user-drag: none;
+      -o-user-drag: none;
+      user-drag: none;
+    }
+
+    .plate_area.highlight {
+      border: 3px solid #007bff;
+      transition: border 0.2s ease;
+    }
+
+    /* 添加淡出动画效果 */
+    .horse_area.fading-out img,
+    .plate_area.fading-out img {
+      animation: fadeOut 1s ease-in-out forwards;
+    }
+
+    /* 闯关成功 */
+    .level_cleared {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: rgba(255, 255, 255, .5);
+      opacity: 0;
+      /* 初始透明度为0 */
+      display: none;
+      /* 默认隐藏 */
+      z-index: 9999;
+    }
+
+
+    .level_cleared.show {
+      display: flex;
+      /* 显示时使用flex */
+      animation: fadeIn 0.5s ease-in-out forwards;
+      /* 淡入动画 */
+    }
+
+    .level_cleared .complete {
+      width: 100%;
+      /* 初始小尺寸 */
+      animation: scaleUp 1s ease-out 0.3s forwards;
+      /* 缩放动画，延迟0.3秒执行 */
+    }
+
+    .reset {
+      width: 50px;
+      height: 50px;
+      position: absolute;
+      top: 14px;
+      right: 10px;
+      z-index: 9999;
+    }
+
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      to {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+    }
+
+    @keyframes scaleUp {
+      from {
+        transform: scale(0.2);
+        /* 从很小开始 */
+        opacity: 0;
+      }
+
+      to {
+        transform: scale(1);
+        /* 放大到正常尺寸 */
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+
+    @media (min-width: 768px) {
+      .bg {
+        width: 652px;
+      }
+
+      .top_horse {
+        height: 330px;
+      }
+
+      .horse_area {
+        width: 120px;
+        /* 触摸设备上使用指针光标 */
+        cursor: pointer;
+      }
+
+      .plate_area {
+        margin-bottom: 60px;
+      }
+
+      .plate_area img {
+        width: 180px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .plate_area img {
+        width: 58%;
+      }
+    }
+
+    @media (max-width: 986px) {
+      .bg {
+        width: 100%;
+      }
+
+      .top_horse {
+        gap: 5%;
+        height: 430px;
+        padding: 0px 20px;
+        box-sizing: border-box;
+      }
+
+      .horse_area {
+        width: 100%;
+        /* 触摸设备上使用指针光标 */
+        cursor: pointer;
+      }
+
+      .bottom_plate {
+        height: 38%;
+      }
+
+      .plate_area img {
+        width: 46%;
+      }
+    }
+
+
+
+    @media (min-width: 1000px) {
+      .horse_area {
+        width: 130px;
+      }
+
+      .plate_area {
+        margin-bottom: 80px;
+      }
+
+      .plate_area img {
+        width: 180px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg">
+    <div class="start_area">
+      <img src="./img/start_btn.png" alt="" onclick="startGame()">
+    </div>
+    <div class="top_horse">
+      <div class="close" onclick="pauseGame()"></div>
+      <div class="horse_area" data-horse-id="1">
+        <img src="./img/horse1.png" alt="">
+      </div>
+      <div class="horse_area" data-horse-id="2">
+        <img src="./img/horse2.png" alt="">
+      </div>
+      <div class="horse_area" data-horse-id="3">
+        <img src="./img/horse3.png" alt="">
+      </div>
+      <div class="horse_area" data-horse-id="4">
+        <img src="./img/horse4.png" alt="">
+      </div>
+    </div>
+    <div class="bottom_plate">
+      <div class="plate_area" data-attr="4">
+        <img src="./img/plate4.png" alt="">
+      </div>
+      <div class="plate_area" data-attr="1">
+        <img src="./img/plate1.png" alt="">
+      </div>
+      <div class="plate_area" data-attr="3">
+        <img src="./img/plate3.png" alt="">
+      </div>
+      <div class="plate_area" data-attr="2">
+        <img src="./img/plate2.png" alt="">
+      </div>
+    </div>
+    <!-- 闯关成功 -->
+    <div class="level_cleared">
+      <img class="reset" onclick="onRestart()" src="./img/reset.jpg" alt="">
+      <img class="complete" src="./img/levelCleared.png" alt="">
+    </div>
+  </div>
+  <audio id="success" src="./img/success.mp3"></audio>
+  <audio id="failure" src="./img/cartoon-fail.mp3"></audio>
+  <audio id="bgMusicId" src="./img/bg_music.mp3"></audio>
+  <audio id="clearCustomsId" src="./img/clearCustoms.mp3"></audio>
+</body>
+
+</html>
+
+<script>
+  // 在文件开头添加计数器
+  let matchedPairs = 0;
+  const totalPairs = 4; // 总共有4对需要匹配
+
+  // 成功音乐
+  const successId = document.getElementById('success');
+  successId.volume = 0.5
+  // 失败音乐
+  const failure = document.getElementById('failure');
+  failure.volume = 1
+  // 背景音乐
+  const bgMusicId = document.getElementById('bgMusicId');
+  bgMusicId.volume = 0.25
+  // 开始游戏按钮
+  const startModel = document.querySelector(".start_area")
+  // 通关
+  const clearCustomsId = document.getElementById('clearCustomsId');
+  // 在文件开头添加洗牌函数
+  function shuffleArray(array) {
+    const newArray = [...array]; // 创建副本以避免修改原数组
+    for (let i = newArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
+  }
+
+  // 洗牌函数 - 随机排列元素
+  function shuffleElements() {
+    const bottomPlate = document.querySelector('.bottom_plate');
+    const topHorse = document.querySelector('.top_horse');
+
+    // 获取所有盘子元素
+    const plateAreas = Array.from(bottomPlate.querySelectorAll('.plate_area'));
+    // 获取所有马匹元素
+    const horseAreas = Array.from(topHorse.querySelectorAll('.horse_area'));
+
+    // 洗牌盘子
+    const shuffledPlates = shuffleArray(plateAreas);
+    const shuffledHorses = shuffleArray(horseAreas);
+
+    // 重新排列盘子
+    shuffledPlates.forEach(plate => {
+      bottomPlate.appendChild(plate);
+    });
+
+    // 重新排列马匹
+    shuffledHorses.forEach(horse => {
+      topHorse.appendChild(horse);
+    });
+  }
+  // 鼠标按下处理函数
+  // 为所有马匹元素添加拖拽功能（支持鼠标和触摸）
+  document.querySelectorAll('.horse_area').forEach(horse => {
+    let isDragging = false;
+    let offsetX, offsetY;
+    let currentElement = horse; // 当前拖拽的元素
+
+    // 处理开始拖拽
+    function handleStart(event) {
+      isDragging = true;
+
+      // 获取坐标，兼容鼠标和触摸事件
+      const clientX = event.clientX || (event.touches && event.touches[0] && event.touches[0].clientX);
+      const clientY = event.clientY || (event.touches && event.touches[0] && event.touches[0].clientY);
+
+      const rect = currentElement.getBoundingClientRect();
+      offsetX = clientX - rect.left;
+      offsetY = clientY - rect.top;
+
+      currentElement.classList.add('moving');
+      currentElement.style.left = rect.left + 'px';
+      currentElement.style.top = rect.top + 'px';
+      currentElement.style.width = rect.width + 'px';
+      currentElement.style.height = rect.height + 'px';
+
+      // 只在原始事件对象上调用 preventDefault
+      if (event.touches) {
+        // 这是触摸事件，使用原始事件对象
+        event.preventDefault();
+      }
+    }
+
+    // 处理拖拽移动
+    function handleMove(event) {
+      if (isDragging) {
+        // 获取坐标，兼容鼠标和触摸事件
+        const clientX = event.clientX || (event.touches && event.touches[0] && event.touches[0].clientX);
+        const clientY = event.clientY || (event.touches && event.touches[0] && event.touches[0].clientY);
+
+        currentElement.style.left = (clientX - offsetX) + 'px';
+        currentElement.style.top = (clientY - offsetY) + 'px';
+
+        checkHoverOnPlate(clientX, clientY);
+      }
+    }
+
+    // 处理拖拽结束
+    function handleEnd(event) {
+      if (isDragging) {
+        isDragging = false;
+
+        currentElement.classList.remove('moving');
+        currentElement.style.left = '';
+        currentElement.style.top = '';
+        currentElement.style.width = '';
+        currentElement.style.height = '';
+
+        // 获取坐标，兼容鼠标和触摸事件
+        const clientX = event.clientX || (event.changedTouches && event.changedTouches[0] && event.changedTouches[0].clientX);
+        const clientY = event.clientY || (event.changedTouches && event.changedTouches[0] && event.changedTouches[0].clientY);
+
+        const targetPlate = getPlateAtPosition(clientX, clientY);
+        if (targetPlate) {
+          const attrValue = targetPlate.getAttribute('data-attr');
+          const horseId = currentElement.dataset.horseId;
+          triggerDropEvent(currentElement, targetPlate, attrValue);
+        }
+      }
+    }
+
+    // 添加鼠标事件
+    currentElement.addEventListener('mousedown', function (e) {
+      handleStart(e);
+    });
+
+    // 添加触摸事件
+    currentElement.addEventListener('touchstart', function (e) {
+      handleStart(e.touches[0]);
+      e.preventDefault(); // 在原始事件上防止默认行为
+    });
+
+    // 添加到文档以确保在拖拽时仍能接收事件
+    document.addEventListener('mousemove', function (e) {
+      handleMove(e);
+    });
+
+    document.addEventListener('touchmove', function (e) {
+      handleMove(e.touches[0]);
+      if (isDragging) {
+        e.preventDefault(); // 在原始事件上防止默认行为
+      }
+    });
+
+    document.addEventListener('mouseup', function (e) {
+      handleEnd(e);
+    });
+
+    document.addEventListener('touchend', function (e) {
+      handleEnd(e.changedTouches[0]);
+    });
+  });
+
+  // 检查鼠标位置是否悬停在盘子上
+  function checkHoverOnPlate(mouseX, mouseY) {
+    // 移除所有盘子的高亮
+    document.querySelectorAll('.plate_area').forEach(plate => {
+      plate.classList.remove('highlight');
+    });
+
+    // // 检查是否有盘子被悬停
+    // const plates = document.querySelectorAll('.plate_area');
+    // for (let plate of plates) {
+    //   const rect = plate.getBoundingClientRect();
+    //   if (mouseX >= rect.left && mouseX <= rect.right &&
+    //     mouseY >= rect.top && mouseY <= rect.bottom) {
+    //     plate.classList.add('highlight');
+    //     break;
+    //   }
+    // }
+  }
+
+  // 获取鼠标位置下的盘子元素
+  function getPlateAtPosition(mouseX, mouseY) {
+    const plates = document.querySelectorAll('.plate_area');
+    for (let plate of plates) {
+      const rect = plate.getBoundingClientRect();
+      if (mouseX >= rect.left && mouseX <= rect.right &&
+        mouseY >= rect.top && mouseY <= rect.bottom) {
+        return plate;
+      }
+    }
+    return null;
+  }
+
+  // 触发匹配事件
+  function triggerDropEvent(horse, plate, attrValue) {
+    if (horse.dataset.horseId === attrValue) {
+      // 匹配成功，让 horse_area 和 plate_area 慢慢消失
+      fadeOutElements(horse, plate);
+      // 重置音频并播放成功音效
+      resetAndPlay(successId);
+
+      // 增加匹配计数
+      matchedPairs++;
+
+      // 检查是否所有马匹都匹配成功
+      if (matchedPairs >= totalPairs) {
+        setTimeout(() => {
+          showLevelCleared();
+        }, 1000); // 等待最后一个动画完成后显示
+      }
+    } else {
+      failure.play();
+    }
+  }
+  // 重置并播放音频
+  function resetAndPlay(audioElement) {
+    // 重置音频到开始位置
+    audioElement.currentTime = 0;
+    // 播放音频
+    audioElement.play();
+  }
+  // 让元素淡出消失
+  function fadeOutElements(horse, plate) {
+    // 为 horse_area 和 plate_area 添加淡出类
+    horse.classList.add('fading-out');
+    plate.classList.add('fading-out');
+
+    // 等待动画完成后移除元素
+    setTimeout(() => {
+      horse.children[0].style.display = 'none';
+      plate.children[0].style.display = 'none';
+    }, 1000); // 与动画持续时间相同
+  }
+
+  // 开始闯关
+  function startGame() {
+    startModel.style.display = "none";
+    shuffleElements()
+    bgMusicId.play();
+  }
+  // 暂停游戏
+  function pauseGame() {
+    bgMusicId.pause();
+    startModel.style.display = "flex";
+  }
+
+  // 显示闯关成功界面
+  function showLevelCleared() {
+    bgMusicId.pause();
+    clearCustomsId.play();
+    const levelCleared = document.querySelector('.level_cleared');
+    levelCleared.style.display = 'flex'; // 先显示元素
+    setTimeout(() => {
+      levelCleared.classList.add('show'); // 触发动画
+    }, 10); // 小延迟确保display生效
+  }
+
+
+  // 重新开始
+  function onRestart() {
+    console.log(1222)
+    location.reload();
+  }
+
+
+</script>
